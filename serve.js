@@ -6,7 +6,7 @@ const { join } = require('path');
 // const PORT = process.env.PORT || 3000;
 // const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080;
-const HOST = process.env.HOST || process.env.OPENSHIFT_NODEJS_HOST || '0.0.0.0';
+const IP = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
 // serve static files
 const app = express();
 app.use(express.static('build'));
@@ -17,5 +17,5 @@ app.get('*', (req, res) => {
 });
 
 // listen
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
+app.listen(PORT, IP);
+console.log(`Running on https://${IP}:${PORT}`);
