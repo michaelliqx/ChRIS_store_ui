@@ -14,6 +14,7 @@ import {
   DropdownKebab,
   MenuItem,
   FieldLevelHelp,
+  MessageDialog,
 } from 'patternfly-react';
 
 import './DashPluginCardView.css';
@@ -59,17 +60,43 @@ class DashPluginCardView extends Component {
   constructor(props) {
     super(props);
 
-    this.deletePlugin = this.deletePlugin.bind(this);
+    this.state = {
+      showConfirmation: false,
+      pluginToDelete: null,
+    };
+
+    const methods = [
+      'deletePlugin', 'secondaryAction', 'showModal',
+    ];
+    methods.forEach((method) => { this[method] = this[method].bind(this); });
   }
-  deletePlugin(name) {
+  deletePlugin() {
     const { onDelete } = this.props;
-    onDelete(name);
+    const { pluginToDelete } = this.state;
+    onDelete(pluginToDelete.id);
+    this.setState({ showConfirmation: false });
   }
+  secondaryAction() {
+    this.setState({ showConfirmation: false });
+  }
+  showModal(plugin) {
+    this.setState({
+      showConfirmation: true,
+      pluginToDelete: plugin,
+    });
+  }
+
 
   render() {
     let pluginCardBody;
     const { plugins } = this.props;
+    const { pluginToDelete, showConfirmation } = this.state;
     const showEmptyState = isEmpty(plugins);
+    const primaryContent = <p className="lead">Are you sure?</p>;
+    const secondaryContent = (
+      <p>
+        Plugin <b>{pluginToDelete ? pluginToDelete.name : null}</b> will be permanently deleted
+      </p>);
     const addNewPlugin = (
       <Col xs={12} sm={6} md={4} key="addNewPlugin">
         <Card>
@@ -98,13 +125,13 @@ class DashPluginCardView extends Component {
               <CardHeading>
                 <CardTitle>
                   <DropdownKebab id="myKebab" pullRight className="card-view-kebob">
-                    <MenuItem eventKey={plugin.name} onSelect={this.deletePlugin}>
+                    <MenuItem eventKey={plugin} onSelect={this.showModal}>
                       Delete
                     </MenuItem>
                   </DropdownKebab>
                   <Link
-                    to={`/plugin/${plugin.name}`}
-                    href={`/plugin/${plugin.name}`}
+                    to={`/plugin/${plugin.id}`}
+                    href={`/plugin/${plugin.id}`}
                   >{plugin.name}
                   </Link>
                   <div className="card-view-tag-title">
@@ -149,6 +176,20 @@ class DashPluginCardView extends Component {
         <React.Fragment>
           <div className="card-view-row">
             {pluginCardBody}
+            <MessageDialog
+              show={showConfirmation}
+              onHide={this.secondaryAction}
+              primaryAction={this.deletePlugin}
+              secondaryAction={this.secondaryAction}
+              primaryActionButtonContent="Delete"
+              secondaryActionButtonContent="Cancel"
+              primaryActionButtonBsStyle="danger"
+              title="Plugin Delete Confirmation"
+              primaryContent={primaryContent}
+              secondaryContent={secondaryContent}
+              accessibleName="deleteConfirmationDialog"
+              accessibleDescription="deleteConfirmationDialogContent"
+            />
           </div>
         </React.Fragment>
     );
